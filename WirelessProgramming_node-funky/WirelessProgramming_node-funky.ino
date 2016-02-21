@@ -36,9 +36,10 @@
 // Please maintain this license information along with authorship
 // and copyright notices in any redistribution of this code
 // **********************************************************************************
+#define DEBUG
 #include <RFM69.h>         //get it here: https://www.github.com/lowpowerlab/rfm69
 #include <SPI.h>
-#include <SPIFlash.h>      //get it here: https://www.github.com/lowpowerlab/spiflash
+//#include <SPIFlash.h>      //get it here: https://www.github.com/lowpowerlab/spiflash
 #include <avr/wdt.h>
 #include <WirelessHEX69.h> //get it here: https://github.com/LowPowerLab/WirelessProgramming/tree/master/WirelessHEX69
 
@@ -46,8 +47,8 @@
 #define NETWORKID   250
 //Match frequency to the hardware version of the radio on your Moteino (uncomment one):
 //#define FREQUENCY   RF69_433MHZ
-//#define FREQUENCY   RF69_868MHZ
-#define FREQUENCY     RF69_915MHZ
+#define FREQUENCY   RF69_868MHZ
+//#define FREQUENCY     RF69_915MHZ
 //#define IS_RFM69HW  //uncomment only for RFM69HW! Leave out if you have RFM69W!
 #define SERIAL_BAUD 115200
 #define ACK_TIME    30  // # of ms to wait for an ack
@@ -57,6 +58,9 @@
 #ifdef __AVR_ATmega1284P__
   #define LED           15 // Moteino MEGAs have LEDs on D15
   #define FLASH_SS      23 // and FLASH SS on D23
+#elif defined(__AVR_ATmega32U4__)
+//  #define LED           13 // Moteinos hsave LEDs on D9
+  #define FLASH_SS      8 // and FLASH SS on D8
 #else
   #define LED           9 // Moteinos hsave LEDs on D9
   #define FLASH_SS      8 // and FLASH SS on D8
@@ -73,22 +77,39 @@ long lastPeriod = -1;
 //                             0xEF30 for windbond 4mbit flash
 //                             0xEF40 for windbond 16/64mbit flash
 /////////////////////////////////////////////////////////////////////////////
-SPIFlash flash(FLASH_SS, 0xEF30); //EF30 for windbond 4mbit flash
+//SPIFlash flash(FLASH_SS, 0xEF30); //EF30 for windbond 4mbit flash
 
 void setup(){
   pinMode(LED, OUTPUT);
   Serial.begin(SERIAL_BAUD);
+
+  pinMode(4,OUTPUT);
+  digitalWrite(4,LOW);
+  delay(100);
+  radio.setCS(10);
+  
   radio.initialize(FREQUENCY,NODEID,NETWORKID);
   radio.encrypt(ENCRYPTKEY); //OPTIONAL
 #ifdef IS_RFM69HW
   radio.setHighPower(); //only for RFM69HW!
 #endif
+  while (!Serial) {Blink(LED,500); /*heartbeat*/};
   Serial.print("Start node...");
-
+/*
   if (flash.initialize())
     Serial.println("SPI Flash Init OK!");
   else
     Serial.println("SPI Flash Init FAIL!");
+    */
+}
+
+
+void Blink(byte PIN, int DELAY_MS)
+{
+  pinMode(PIN, OUTPUT);
+  digitalWrite(PIN,HIGH);
+  delay(DELAY_MS);
+  digitalWrite(PIN,LOW);
 }
 
 void loop(){
@@ -103,7 +124,7 @@ void loop(){
       int counter = 0;
 
       while(counter<=256){
-        Serial.print(flash.readByte(counter++), HEX);
+//        Serial.print(flash.readByte(counter++), HEX);
         Serial.print('.');
       }
       
@@ -112,14 +133,14 @@ void loop(){
     else if (input == 'e')
     {
       Serial.print("Erasing Flash chip ... ");
-      flash.chipErase();
-      while(flash.busy());
+      //flash.chipErase();
+      //while(flash.busy());
       Serial.println("DONE");
     }
     else if (input == 'i')
     {
       Serial.print("DeviceID: ");
-      Serial.println(flash.readDeviceId(), HEX);
+      //Serial.println(flash.readDeviceId(), HEX);
     }
     else if (input == 'r')
     {
@@ -134,7 +155,7 @@ void loop(){
     else if (input >= 48 && input <= 57) //0-9
     {
       Serial.print("\nWriteByte("); Serial.print(input); Serial.print(")");
-      flash.writeByte(input-48, millis()%2 ? 0xaa : 0xbb);
+      //flash.writeByte(input-48, millis()%2 ? 0xaa : 0xbb);
     }
   }
   
@@ -151,7 +172,7 @@ void loop(){
     for (byte i = 0; i < radio.DATALEN; i++)
       Serial.print((char)radio.DATA[i], HEX);
     Serial.println();
-    CheckForWirelessHEX(radio, flash, true);
+    CheckForWirelessHEX(radio, NULL, true);
     Serial.println();
   }
   //else Serial.print('.');
