@@ -56,6 +56,10 @@
 #define ENCRYPTKEY "sampleEncryptKey" //(16 bytes of your choice - keep the same on all encrypted nodes)
 #define BLINKPERIOD 500
 
+#ifdef LED
+#undef LED
+#endif
+
 #ifdef __AVR_ATmega1284P__
   #define LED           15 // Moteino MEGAs have LEDs on D15
   #define FLASH_SS      23 // and FLASH SS on D23
