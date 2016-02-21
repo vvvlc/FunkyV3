@@ -39,7 +39,7 @@
 // **********************************************************************************
 #include <RFM69.h>          //get it here: https://www.github.com/lowpowerlab/rfm69
 #include <SPI.h>
-#include <SPIFlash.h>      //get it here: https://www.github.com/lowpowerlab/spiflash
+//#include <SPIFlash.h>      //get it here: https://www.github.com/lowpowerlab/spiflash
 #include <WirelessHEX69.h> //get it here: https://github.com/LowPowerLab/WirelessProgramming/tree/master/WirelessHEX69
 
 #define NODEID             254  //this node's ID, should be unique among nodes on this NETWORKID
