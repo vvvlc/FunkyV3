@@ -113,6 +113,16 @@ void Blink(byte PIN, int DELAY_MS)
   digitalWrite(PIN,LOW);
 }
 
+#define NEW_FLASH_OFFSET 0x3800
+#define SIZE_OF_NEW_FLASH_HEADER 2
+
+void printHex(int a){
+  
+       char tmp[5];
+       sprintf(tmp, "%.4X",a); 
+       SerialX.print(tmp);
+}
+
 void loop(){
   // This part is optional, useful for some debugging.
   // Handle serial input (to allow basic DEBUGGING of FLASH chip)
@@ -121,17 +131,20 @@ void loop(){
     input = SerialX.read();
     if (input == 'd') //d=dump first page
     {
-      SerialX.println("Flash content:");
-      int counter = 0;
-
-      while(counter<=256){
-//        SerialX.print(flash.readByte(counter++), HEX);
-        SerialX.print('.');
+      for(int base=0;base<NEW_FLASH_OFFSET+2;base += NEW_FLASH_OFFSET){
+        SerialX.print("Flash: 0x");
+        printHex(base);SerialX.println();
+        
+        for(int counter=0;counter<60;) {
+          printHex(pgm_read_word(counter++ +base));
+          SerialX.print('.');
+          if (counter % 10 ==0) SerialX.println();
+        }
+        
+        SerialX.println();
       }
-      
-      SerialX.println();
     }
-    else if (input == 'e')
+    /*else if (input == 'e')
     {
       SerialX.print("Erasing Flash chip ... ");
       //flash.chipErase();
@@ -141,8 +154,8 @@ void loop(){
     else if (input == 'i')
     {
       SerialX.print("DeviceID: ");
-      //SerialX.println(flash.readDeviceId(), HEX);
-    }
+      
+    }*/
     else if (input == 'r')
     {
       SerialX.print("Rebooting");
@@ -153,11 +166,11 @@ void loop(){
       SerialX.print("RFM69 registers:");
       radio.readAllRegs();
     }
-    else if (input >= 48 && input <= 57) //0-9
+    /*else if (input >= 48 && input <= 57) //0-9
     {
       SerialX.print("\nWriteByte("); SerialX.print(input); SerialX.print(")");
       //flash.writeByte(input-48, millis()%2 ? 0xaa : 0xbb);
-    }
+    }*/
   }
   
   // Check for existing RF data, potentially for a new sketch wireless upload
