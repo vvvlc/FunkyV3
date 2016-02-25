@@ -1,3 +1,7 @@
+nezapomenou pridat dva bajty delky na zacatek souboru
+
+Use padhextopage.sh to fix length of hex file
+
 ./WirelessProgramming.py -h
  -d                   debug
  -f or -file          HEX file to upload (Default:  flash.hex )
