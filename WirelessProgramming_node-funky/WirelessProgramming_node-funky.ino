@@ -98,8 +98,8 @@ void setup(){
 #ifdef IS_RFM69HW
   radio.setHighPower(); //only for RFM69HW!
 #endif
-  while (!SerialX) {Blink(LED,500); /*heartbeat*/};
-  SerialX.print("Start node...");
+  //while (!SerialX) {Blink(LED,500); /*heartbeat*/};
+  SerialX.println("Start");
 /*
   if (flash.initialize())
     SerialX.println("SPI Flash Init OK!");
@@ -135,14 +135,15 @@ void loop(){
     input = SerialX.read();
     if (input == 'd') //d=dump first page
     {
-      for(int base=0;base<NEW_FLASH_OFFSET+2;base += NEW_FLASH_OFFSET){
+      for(int base=0;base<NEW_FLASH_OFFSET+SPM_PAGESIZE;base += (base==0)?NEW_FLASH_OFFSET:(SPM_PAGESIZE-16)){
         SerialX.print("Flash: 0x");
         printHex(base);SerialX.println();
         
         for(int counter=0;counter<60;) {
-          printHex(pgm_read_word(counter++ +base));
+          printHex(pgm_read_word(counter +base));
+          counter+=2;
           SerialX.print('.');
-          if (counter % 10 ==0) SerialX.println();
+          if (counter % 0x10 ==0) SerialX.println();
         }
         
         SerialX.println();
@@ -167,7 +168,7 @@ void loop(){
     }
     else if (input == 'R')
     {
-      SerialX.print("RFM69 registers:");
+      SerialX.print("RFM69regs:");
       radio.readAllRegs();
     }
     /*else if (input >= 48 && input <= 57) //0-9
